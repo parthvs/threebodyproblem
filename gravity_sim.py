@@ -1,17 +1,35 @@
 import pygame
 import math
 import random
+import os
+
+def clear_console():
+    if os.name == 'nt':  # 'nt' indicates Windows
+        os.system('cls')
+    else:  # For other operating systems like Linux or macOS
+        os.system('clear')
+
+clear_console()
+
+print("PLANET SIM 2D")
+a = "=="
+a = a*50
+
+print("\n",a,"\n\n")
+
+print("Instructions:\n1.You can press T to toggle trace on or off\n2.Enter the number of planets\n")
+n = int(input("Enter no of planets: "))
 
 
-
-
-n = int(input("enter no of planets"))
 pygame.init()
 
 
 screen = pygame.display.set_mode((800, 600))
 black = (0, 0, 0)
 running = True
+
+trace_active = -1
+gravity_well_active = False
 
 
 def initialize(ls,n):
@@ -79,7 +97,7 @@ def update(ls,mode=0):
 
         ##trace stuff
         if mode == 0:
-            if len(history[i]) >5000:
+            if len(history[i]) >500:
                 history[i].pop(0)    
             history[i].append((x,y))
     return ls
@@ -129,6 +147,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_t:
+                trace_active *= -1 
     
     mouse_buttons = pygame.mouse.get_pressed()
     mouse_pos = pygame.mouse.get_pos()
@@ -144,8 +165,10 @@ while running:
     screen.fill(black)
     bodies = track(bodies)
 
-    bodies = update(bodies)
-    trace(bodies)
+    bodies = update(bodies) 
+
+    if(trace_active ==1):
+        trace(bodies)
     
     draw(bodies)
     
