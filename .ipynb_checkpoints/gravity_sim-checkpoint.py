@@ -29,6 +29,7 @@ black = (0, 0, 0)
 running = True
 
 trace_active = -1
+track_active = 1
 gravity_well_active = False
 
 
@@ -42,6 +43,9 @@ def initialize(ls,n):
         color = (random.randint(100,255),random.randint(100,255),random.randint(100,255))
         temp = [x, y, m, vx, vy, color]
         ls.append(temp)
+
+    gravitywell_ls = [400,300,11,0,0,(255,255,255)]
+    ls.append(gravitywell_ls)
     return ls
     
 G = 0.5
@@ -85,7 +89,7 @@ def update(ls,mode=0):
                 fy += -tfy
                 
                 force[j] =  (fx,fy)
-    for i in range(len(ls)):
+    for i in range(len(ls)-1):
         fx, fy = force[i]
         x, y, m, vx, vy, c = ls[i]
 
@@ -114,26 +118,38 @@ def track(bodies):
 
     xmean -= 400
     ymean -=300
-    for i in range(len(bodies)):
+    for i in range(len(bodies)-1):
         x,y,i1,i2,i3,i4 = bodies[i]
         x -= xmean
         y -= ymean
         bodies[i] = x,y,i1,i2,i3,i4
     return bodies
 
+def zoom(bodies):
+    pass
+    
 
 def trace(ls):
 
     for i in range(len(history)):
         for j in range(len(history[i])-1):
             _,_,_,_,_,c = bodies[i]
-            pygame.draw.aaline(screen,c,history[i][j+1],history[i][j])
+            pygame.draw.line(screen,c,history[i][j+1],history[i][j],1)
         
 def draw(ls):
 
     for i in ls:
         x,y,m,vx,vy,c = i
         pygame.draw.circle(screen, c, (int(x), int(y)), m)
+
+def gravity_well(bodies,mouse_pos):
+    x,y = mouse_pos
+    well = [x,y,9999999999999,0,0,(0,0,0)]
+    ls = bodies.copy()
+    ls.append(well)
+    ls = update(ls,1)
+    return ls[:-1]
+
 
 
 while running:
@@ -143,11 +159,23 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_t:
                 trace_active *= -1 
+            if event.key == pygame.K_c:
+                track_active *= -1
     
+    mouse_buttons = pygame.mouse.get_pressed()
+    mouse_pos = pygame.mouse.get_pos()
+
+    if mouse_buttons[0]:  # Left mouse button is held down
+        if not gravity_well_active:
+            bodies = gravity_well(bodies, mouse_pos)
+            gravity_well_active = True
+    else:  # Mouse button is not pressed
+        gravity_well_active = False
 
     
     screen.fill(black)
-    bodies = track(bodies)
+    if(track_active == 1):
+        bodies = track(bodies)
 
     bodies = update(bodies) 
 

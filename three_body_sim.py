@@ -11,32 +11,29 @@ def clear_console():
 
 clear_console()
 
-print("PLANET SIM 2D")
+print("THREE BODY PROBLEM SIM 2D")
 a = "=="
 a = a*50
 
 print("\n",a,"\n\n")
 
-print("Instructions:\n1.You can press T to toggle trace on or off\n2.Enter the number of planets\n")
-n = int(input("Enter no of planets: "))
+print("Instructions:\n1.You can press T to toggle trace on or off\n2.You can press S to toggle sparkle effect on or off\n")
+n =3
 
-
-pygame.init()
-
-
-screen = pygame.display.set_mode((800, 600))
 black = (0, 0, 0)
 running = True
 
 trace_active = -1
 gravity_well_active = False
+sparkle_active = -1
 
 
 def initialize(ls,n):
     for i in range(n):
-        x = random.randint(50,750)
-        y = random.randint(50,550)
-        m = 10
+        print(f"body {i}")
+        x = int(input("Enter x "))
+        y = int(input("Enter y "))
+        m = int(input("enter mass "))
         vx = 0
         vy = 0
         color = (random.randint(100,255),random.randint(100,255),random.randint(100,255))
@@ -55,6 +52,11 @@ for i in range(n):
     history.append([])
 
 
+
+pygame.init()
+
+
+screen = pygame.display.set_mode((800, 600))
 
 def update(ls,mode=0):
     force= []
@@ -97,7 +99,7 @@ def update(ls,mode=0):
 
         ##trace stuff
         if mode == 0:
-            if len(history[i]) >500:
+            if len(history[i]) >1000:
                 history[i].pop(0)    
             history[i].append((x,y))
     return ls
@@ -133,8 +135,22 @@ def draw(ls):
 
     for i in ls:
         x,y,m,vx,vy,c = i
-        pygame.draw.circle(screen, c, (int(x), int(y)), m)
+        if sparkle_active == 1:
+            draw_sparkles((int(x),int(y)), c)
+        else:
+            pygame.draw.circle(screen, c, (int(x), int(y)), m)
 
+def draw_sparkles(centre,color):
+    radius_max = 10
+    for i in range(20):
+        radius = random.randint(1,radius_max)
+        theta = random.uniform(0,math.pi*2)
+        x,y = centre
+        x1 = x  + radius * math.cos(theta)
+        x2 = x  - radius * math.cos(theta)
+        y1 = y  + radius * math.sin(theta)
+        y2 = y - radius * math.sin(theta)
+        pygame.draw.line(screen, color, (x1,y1),(x2,y2),1)
 
 while running:
     for event in pygame.event.get():
@@ -143,9 +159,10 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_t:
                 trace_active *= -1 
-    
+            if event.key == pygame.K_s:
+                sparkle_active *= -1
 
-    
+
     screen.fill(black)
     bodies = track(bodies)
 
