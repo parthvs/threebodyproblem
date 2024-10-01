@@ -26,14 +26,14 @@ running = True
 trace_active = -1
 gravity_well_active = False
 sparkle_active = -1
-
+graph_active = -1 
 
 def initialize(ls,n):
     for i in range(n):
         print(f"body {i}")
-        x = int(input("Enter x "))
-        y = int(input("Enter y "))
-        m = int(input("enter mass "))
+        x = random.randint(10,700)
+        y = random.randint(10,600)
+        m = 10
         vx = 0
         vy = 0
         color = (random.randint(100,255),random.randint(100,255),random.randint(100,255))
@@ -48,8 +48,12 @@ bodies= []
 bodies = initialize(bodies,n)
 
 history = []
+vel_his = []
+
 for i in range(n):
     history.append([])
+    vel_his.append([])
+
 
 
 
@@ -98,10 +102,14 @@ def update(ls,mode=0):
         ls[i] = x, y, m, vx, vy, c 
 
         ##trace stuff
-        if mode == 0:
-            if len(history[i]) >1000:
-                history[i].pop(0)    
-            history[i].append((x,y))
+        if len(history[i]) >100000:
+            history[i].pop(0)    
+        history[i].append((x,y))
+        
+        if len(vel_his[i]) > 1000000:
+            vel_his[i].pop(0)
+        vel_his[i].append((vx,vy))
+        print(vx,vy)
     return ls
 
 def track(bodies):
@@ -129,7 +137,7 @@ def trace(ls):
     for i in range(len(history)):
         for j in range(len(history[i])-1):
             _,_,_,_,_,c = bodies[i]
-            pygame.draw.aaline(screen,c,history[i][j+1],history[i][j])
+            pygame.draw.line(screen,c,history[i][j+1],history[i][j],1)
         
 def draw(ls):
 
@@ -152,6 +160,24 @@ def draw_sparkles(centre,color):
         y2 = y - radius * math.sin(theta)
         pygame.draw.line(screen, color, (x1,y1),(x2,y2),1)
 
+def graph(history):
+
+    for i in range(len(history)):
+        for j in range(len(history[i])-1):
+            scale = 250
+            x1,y1 = history[i][j+1]
+            x1,y1 = (x1 * scale) + 400, (y1 * scale) + 300
+            x2,y2 = history[i][j]
+            x2,y2 = (x2 * scale) + 400, (y2 * scale) + 300
+            if i == 0:
+                c = (255,140,0)
+                #pygame.draw.aaline(screen,c,(x1,y1),(x2,y2))
+            if i== 1:
+                c = (255,0,0)
+            if i == 2:
+                c = (255,255,0)
+            pygame.draw.aaline(screen,c,(x1,y1),(x2,y2))
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -161,19 +187,23 @@ while running:
                 trace_active *= -1 
             if event.key == pygame.K_s:
                 sparkle_active *= -1
+            if event.key == pygame.K_g:
+                graph_active *= -1
 
 
     screen.fill(black)
-    bodies = track(bodies)
 
     bodies = update(bodies) 
-
-    if(trace_active ==1):
-        trace(bodies)
-    
-    draw(bodies)
-    
-    
+    if graph_active == -1:
+        bodies = track(bodies)
+        if(trace_active ==1):
+            trace(bodies)
+        
+        draw(bodies)
+    if graph_active == 1:
+        graph(vel_his)
+        
+        
     pygame.display.flip()
 
 pygame.quit()

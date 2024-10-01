@@ -143,6 +143,7 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_t:
                 trace_active *= -1 
+
     
 
     
